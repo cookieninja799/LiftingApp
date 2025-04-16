@@ -87,7 +87,7 @@ cd LiftingApp
 npm install
 
 # Start the Express server for AI parsing
-npm run start:server
+node server.js
 
 # Start the Expo development server
 npm run start
