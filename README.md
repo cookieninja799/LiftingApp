@@ -1,50 +1,141 @@
-# Welcome to your Expo app 👋
+# LiftingApp 🏋️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile workout tracker built with Expo and powered by OpenAI, LiftingApp lets users log workouts in natural language and automatically converts them into structured exercise sessions. Dive into your workout history, analyze performance over time, and track personal records—all in one place.
 
-## Get started
+## 🚀 Features
 
-1. Install dependencies
+- **Natural Language Logging**: Enter workouts like “Squats 3x8 @ 185 lbs” and let the AI parse exercises, sets, reps, and weights.
+- **Workout Journals**: View, edit, and delete past sessions, grouped by week or month.
+- **Analytics Dashboard**:
+  - Calendar heatmap of weekly training volume.
+  - Muscle group stats with volume and emoji-driven feedback.
+  - Personal record tracking for each exercise.
+- **Profile Setup**: Save age, gender, weight, and height to personalize bodyweight calculations.
+- **Theming & Accessibility**: Light/dark mode support with customizable colors.
 
-   ```bash
-   npm install
+## 📋 Prerequisites
+
+- **Node.js** >= 18
+- **npm** >= 8
+- **Expo CLI**: Install globally via `npm install -g expo-cli`
+- **OpenAI API Key** and **Assistant ID** (see Configuration)
+
+## ⚙️ Configuration
+
+1. Copy `.env.example` to `.env` at the project root.
+2. Set the following variables:
+   ```env
+   OPENAI_API_KEY=your_openai_api_key
+   ASSISTANT_ID=your_openai_assistant_id
+   API_BASE_URL=http://localhost:3000
    ```
 
-2. Start the app
+### 🤖 Assistant Setup
 
-   ```bash
-    npx expo start
-   ```
+To enable AI parsing, you must create a dedicated OpenAI Assistant with the following system prompt:
 
-In the output, you'll find options to open the app in a
+```
+You are a plain English to JSON parser for exercise logs. Your task is to convert user-provided exercise descriptions into structured JSON objects, ensuring accuracy and consistency.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Output Format
+Always return a JSON array, where each object represents one exercise. No additional text, explanations, or commentary should be included.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Each object must conform to the following schema:
+{
+  "id": "string",          // Unique identifier (null if not provided)
+  "date": "YYYY-MM-DD",    // Workout date (null if not provided)
+  "exercise": "string",    // Exercise name (Title Case)
+  "sets": integer,         // Number of sets (default: 1 if not specified)
+  "reps": [integer],       // Array of rep counts (null if not specified)
+  "weights": [string],     // Array of weights per set (use "bodyweight" if applicable)
+  "primaryMuscleGroup": "string" // Primary muscle group
+}
 
-## Get a fresh project
+ID Generation
+Each exercise entry must have a unique ID using the format:
+"{YYYY-MM-DD}-{exerciseIndex}"
+YYYY-MM-DD is the parsed date (null if unavailable).
+exerciseIndex is an incrementing counter (starting at 1) for each exercise on the same date.
 
-When you're ready, run:
+Date Handling
+The date field must be parsed from various input formats (e.g., "December 3rd", "12/3/24"). If no date is provided, set "date": null.
 
-```bash
-npm run reset-project
+Handling Missing Values
+- Reps missing: default to null
+- Sets missing: default to 1
+- Weights missing: use "bodyweight" for bodyweight exercises, otherwise null
+
+Exercise-Specific Rules
+- Bodyweight exercises: weights = ["bodyweight", ...]
+- Dumbbell exercises: if given per dumbbell, double the weight (e.g., "35 lb dumbbells" → "70 lbs").
+
+Normalize exercise names to Title Case and assign a primary muscle group based on common mappings (e.g., Push-Ups → Chest, Squats → Quads).
+
+Only output valid JSON—no prose or code fences.
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3. Ensure the Express backend (`server.js`) is running to handle AI parsing requests.
 
-## Learn more
+## 🔧 Installation
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/LiftingApp.git
+cd LiftingApp
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Install dependencies
+npm install
 
-## Join the community
+# Start the Express server for AI parsing
+npm run start:server
 
-Join our community of developers creating universal apps.
+# Start the Expo development server
+npm run start
+# or 'expo start'
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📱 Running the App
+
+In the Expo CLI output, choose one of:
+
+- 📱 **Expo Go** (iOS/Android) to scan the QR code
+- 🖥️ **Web**: Press `w`
+- 📲 **Simulator/Emulator**: Press `i` (iOS) or `a` (Android)
+
+## 📂 Project Structure
+
+```
+└── LiftingApp/
+    ├── app/                   # Screens & routes (Expo Router)
+    ├── components/            # Reusable UI & analytics widgets
+    ├── constants/             # Color tokens, theming
+    ├── hooks/                 # Custom hooks (theme, color scheme)
+    ├── styles/                # Shared StyleSheet definitions
+    ├── utils/                 # Helpers: date/week logic, volume calculations
+    ├── server.js              # Express + OpenAI thread polling backend
+    ├── .env.example           # Environment variable template
+    ├── app.json               # Expo configuration
+    ├── package.json
+    └── tsconfig.json
+```
+
+## 🧪 Testing
+
+```bash
+# Run Jest in watch mode
+npm test
+```
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m "feat: add awesome feature"`)
+4. Push to your branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+Ensure code is linted (`npm run lint`) and tests pass.
+
+## 📜 License
+
+This project is MIT licensed. See [LICENSE](LICENSE) for details.
