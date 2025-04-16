@@ -11,6 +11,7 @@ import {
   Pressable 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadUserProfile } from '../../utils/helpers';
 
 const Profile: React.FC = () => {
   const [age, setAge] = useState('');
@@ -22,10 +23,11 @@ const Profile: React.FC = () => {
     const profile = { age, gender, weight, height };
     try {
       await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
-      Alert.alert('Success', 'Profile saved successfully!');
-      console.log('Profile:', profile);
+      // Immediately reload into our in‑memory cache
+      await loadUserProfile();
+      Alert.alert('Success', 'Profile saved and reloaded!');
     } catch (error) {
-      console.error('Failed to save profile:', error);
+      console.error(error);
       Alert.alert('Error', 'Failed to save profile.');
     }
   };

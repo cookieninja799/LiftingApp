@@ -1,5 +1,6 @@
 // Analytics.tsx
 import React, { useState, useCallback } from 'react';
+import { loadUserProfile } from '../../utils/helpers';
 import { View, Text, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -40,6 +41,8 @@ const Analytics: React.FC = () => {
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
 
   const calculateStats = async () => {
+    // 🚀 Ensure we pull in the latest saved profile
+    await loadUserProfile();
     try {
       const storedSessions = await AsyncStorage.getItem('workoutSessions');
       if (!storedSessions) return;
